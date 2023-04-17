@@ -16,16 +16,14 @@ const ask = (openai: OpenAIApi) => (prompt: string) => {
   // The code you place here will be executed every time your command is executed
   // Display a message box to the user
   console.log("prompt", prompt);
-  openai
+  return openai
     .createCompletion({
       model: "text-davinci-003",
       prompt,
     })
-    .then((completion) => {
-      vscode.window.showInformationMessage(
-        completion.data.choices.map((choice) => choice.text).join("\n")
-      );
-    });
+    .then((completion) =>
+      completion.data.choices.map((choice) => choice.text).join()
+    );
 };
 
 // This method is called when your extension is activated
@@ -59,7 +57,22 @@ export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
     "ai-code-assist.explain",
     () => {
-      askCommand("What is OpenAI");
+      // Get the selected text of the active editor
+      const selection = vscode.window.activeTextEditor?.selection;
+      const selectedText =
+        vscode.window.activeTextEditor?.document.getText(selection);
+      const prompt = "Explain what this code does: ";
+
+      let searchPrompt = "";
+
+      if (selection && selectedText) {
+        // If there is a selection, add the prompt and the selected text to the search prompt
+        searchPrompt = `${prompt}\n\`\`\`\n${selectedText}\n\`\`\``;
+      }
+
+      askCommand(searchPrompt).then((response) => {
+        provider.setResponse(response);
+      });
     }
   );
 

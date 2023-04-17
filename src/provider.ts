@@ -2,14 +2,17 @@ import * as vscode from "vscode";
 
 export class ChatGPTViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "ai-code-assist.chatView";
+  private _view?: vscode.WebviewView;
 
   // In the constructor, we store the URI of the extension
   constructor(
     private readonly _extensionUri: vscode.Uri,
-    private readonly askHandler: (prompt: string) => void
+    private readonly askHandler: (prompt: string) => Promise<string>
   ) {}
 
   public resolveWebviewView(webviewView: vscode.WebviewView) {
+    this._view = webviewView;
+
     // set options for the webview
     webviewView.webview.options = {
       // Allow scripts in the webview
@@ -24,10 +27,20 @@ export class ChatGPTViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage((data) => {
       switch (data.type) {
         case "prompt": {
-          this.askHandler(data.value);
+          this.askHandler(data.value).then((response) => {
+            this.setResponse(response);
+          });
         }
       }
     });
+  }
+
+  public setResponse(response: string) {
+    // Show the view and send a message to the webview with the response
+    if (this._view) {
+      this._view.show?.(true);
+      this._view.webview.postMessage({ type: "addResponse", value: response });
+    }
   }
 
   private _getHtmlForWebview(webview: vscode.Webview) {
