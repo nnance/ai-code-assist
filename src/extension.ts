@@ -51,32 +51,41 @@ export function activate(context: vscode.ExtensionContext) {
     )
   );
 
-  // The command has been defined in the package.json file
-  // Now provide the implementation of the command with registerCommand
-  // The commandId parameter must match the command field in package.json
-  let disposable = vscode.commands.registerCommand(
-    "ai-code-assist.explain",
+  const commandAsk = vscode.commands.registerCommand(
+    "ai-code-assist.ask",
     () => {
-      // Get the selected text of the active editor
-      const selection = vscode.window.activeTextEditor?.selection;
-      const selectedText =
-        vscode.window.activeTextEditor?.document.getText(selection);
-      const prompt = "Explain what this code does: ";
-
-      let searchPrompt = "";
-
-      if (selection && selectedText) {
-        // If there is a selection, add the prompt and the selected text to the search prompt
-        searchPrompt = `${prompt}\n\`\`\`\n${selectedText}\n\`\`\``;
-      }
-
-      askCommand(searchPrompt).then((response) => {
-        provider.setResponse(response);
-      });
+      vscode.window
+        .showInputBox({ prompt: "What do you want to do?" })
+        .then((prompt) => askCommand(prompt || ""))
+        .then((response) => provider.setResponse(response));
     }
   );
 
-  context.subscriptions.push(disposable);
+  const commandExplain = vscode.commands.registerCommand(
+    "ai-code-assist.explain",
+    () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        return;
+      }
+
+      // Get the selected text of the active editor
+      const selection = editor.selection;
+      const selectedText = editor.document.getText(selection);
+      const prompt = "Explain what this code does: ";
+
+      if (selection && selectedText) {
+        // If there is a selection, add the prompt and the selected text to the search prompt
+        const searchPrompt = `${prompt}\n\`\`\`\n${selectedText}\n\`\`\``;
+
+        askCommand(searchPrompt).then((response) => {
+          provider.setResponse(response);
+        });
+      }
+    }
+  );
+
+  context.subscriptions.push(commandAsk, commandExplain);
 }
 
 // This method is called when your extension is deactivated

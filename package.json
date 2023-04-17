@@ -22,7 +22,24 @@
         "title": "AICodeAssist: Explain selection"
       }
     ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "ai-code-assist.ask",
+          "when": "editorTextFocus",
+          "group": "chatgpt-menu-group@1"
+        },
+        {
+          "command": "ai-code-assist.explain",
+          "when": "editorHasSelection",
+          "group": "chatgpt-menu-group@2"
+        }
+      ]
+    },
     "commandPalette": [
+      {
+        "command": "ai-code-assist.ask"
+      },
       {
         "command": "ai-code-assist.explain",
         "when": "editorHasSelection"
