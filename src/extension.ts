@@ -2,6 +2,31 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import { Configuration, OpenAIApi } from "openai";
+import { ChatGPTViewProvider } from "./provider";
+
+const createSession = (): OpenAIApi => {
+  const config = vscode.workspace.getConfiguration("ai-code-assist");
+  const apiKey = config.get("apiKey") as string;
+
+  const configuration = new Configuration({ apiKey });
+  return new OpenAIApi(configuration);
+};
+
+const ask = (openai: OpenAIApi) => (prompt: string) => {
+  // The code you place here will be executed every time your command is executed
+  // Display a message box to the user
+  console.log("prompt", prompt);
+  openai
+    .createCompletion({
+      model: "text-davinci-003",
+      prompt,
+    })
+    .then((completion) => {
+      vscode.window.showInformationMessage(
+        completion.data.choices.map((choice) => choice.text).join("\n")
+      );
+    });
+};
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -12,11 +37,21 @@ export function activate(context: vscode.ExtensionContext) {
     'Congratulations, your extension "ai-code-assist" is now active!'
   );
 
-  const config = vscode.workspace.getConfiguration("ai-code-assist");
-  const apiKey = config.get("apiKey") as string;
+  const session = createSession();
+  const askCommand = ask(session);
 
-  const configuration = new Configuration({ apiKey });
-  const openai = new OpenAIApi(configuration);
+  // Create a new ChatGPTViewProvider instance and register it with the extension's context
+  const provider = new ChatGPTViewProvider(context.extensionUri, askCommand);
+
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      ChatGPTViewProvider.viewType,
+      provider,
+      {
+        webviewOptions: { retainContextWhenHidden: true },
+      }
+    )
+  );
 
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with registerCommand
@@ -24,18 +59,7 @@ export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
     "ai-code-assist.explain",
     () => {
-      // The code you place here will be executed every time your command is executed
-      // Display a message box to the user
-      openai
-        .createCompletion({
-          model: "text-davinci-003",
-          prompt: "What is OpenAI?",
-        })
-        .then((completion) => {
-          vscode.window.showInformationMessage(
-            completion.data.choices.map((choice) => choice.text).join("\n")
-          );
-        });
+      askCommand("What is OpenAI");
     }
   );
 
