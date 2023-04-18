@@ -1,29 +1,21 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
-import { Configuration, OpenAIApi } from "openai";
 import { ChatGPTViewProvider } from "./provider";
+import { sendMessage } from "./chatgpt";
 
-const createSession = (): OpenAIApi => {
-  const config = vscode.workspace.getConfiguration("ai-code-assist");
-  const apiKey = config.get("apiKey") as string;
-
-  const configuration = new Configuration({ apiKey });
-  return new OpenAIApi(configuration);
-};
-
-const ask = (openai: OpenAIApi) => (prompt: string) => {
+const ask = (prompt: string) => {
   // The code you place here will be executed every time your command is executed
   // Display a message box to the user
   console.log("prompt", prompt);
-  return openai
-    .createCompletion({
-      model: "text-davinci-003",
-      prompt,
-    })
-    .then((completion) =>
-      completion.data.choices.map((choice) => choice.text).join()
-    );
+
+  const config = vscode.workspace.getConfiguration("ai-code-assist");
+  const apiKey = config.get("apiKey") as string;
+
+  return sendMessage(apiKey, prompt).then((data) => {
+    console.log(data);
+    return data;
+  });
 };
 
 // This method is called when your extension is activated
@@ -35,11 +27,8 @@ export function activate(context: vscode.ExtensionContext) {
     'Congratulations, your extension "ai-code-assist" is now active!'
   );
 
-  const session = createSession();
-  const askCommand = ask(session);
-
   // Create a new ChatGPTViewProvider instance and register it with the extension's context
-  const provider = new ChatGPTViewProvider(context.extensionUri, askCommand);
+  const provider = new ChatGPTViewProvider(context.extensionUri, ask);
 
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
@@ -56,7 +45,7 @@ export function activate(context: vscode.ExtensionContext) {
     () => {
       vscode.window
         .showInputBox({ prompt: "What do you want to do?" })
-        .then((prompt) => askCommand(prompt || ""))
+        .then((prompt) => ask(prompt || ""))
         .then((response) => provider.setResponse(response));
     }
   );
@@ -78,7 +67,7 @@ export function activate(context: vscode.ExtensionContext) {
         // If there is a selection, add the prompt and the selected text to the search prompt
         const searchPrompt = `${prompt}\n\`\`\`\n${selectedText}\n\`\`\``;
 
-        askCommand(searchPrompt).then((response) => {
+        ask(searchPrompt).then((response) => {
           provider.setResponse(response);
         });
       }
