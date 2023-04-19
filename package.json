@@ -20,19 +20,56 @@
       {
         "command": "ai-code-assist.explain",
         "title": "AICodeAssist: Explain selection"
+      },
+      {
+        "command": "ai-code-assist.refactor",
+        "title": "AICodeAssist: Refactor selection"
+      },
+      {
+        "command": "ai-code-assist.findProblems",
+        "title": "AICodeAssist: Find problems"
+      },
+      {
+        "command": "ai-code-assist.optimize",
+        "title": "AICodeAssist: Optimize selection"
+      },
+      {
+        "command": "ai-code-assist.writeTest",
+        "title": "AICodeAssist: Test selection"
       }
+
     ],
     "menus": {
       "editor/context": [
         {
           "command": "ai-code-assist.ask",
           "when": "editorTextFocus",
-          "group": "chatgpt-menu-group@1"
+          "group": "ai-code-assist-menu-group@1"
         },
         {
           "command": "ai-code-assist.explain",
           "when": "editorHasSelection",
-          "group": "chatgpt-menu-group@2"
+          "group": "ai-code-assist-menu-group@2"
+        },
+        {
+          "command": "ai-code-assist.refactor",
+          "when": "editorHasSelection",
+          "group": "ai-code-assist-menu-group@3"
+        },
+        {
+          "command": "ai-code-assist.findProblems",
+          "when": "editorHasSelection",
+          "group": "ai-code-assist-menu-group@4"
+        },
+        {
+          "command": "ai-code-assist.optimize",
+          "when": "editorHasSelection",
+          "group": "ai-code-assist-menu-group@5"
+        },
+        {
+          "command": "ai-code-assist.writeTest",
+          "when": "editorHasSelection",
+          "group": "ai-code-assist-menu-group@6"
         }
       ]
     },
@@ -42,6 +79,22 @@
       },
       {
         "command": "ai-code-assist.explain",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "ai-code-assist.refactor",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "ai-code-assist.findProblems",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "ai-code-assist.optimize",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "ai-code-assist.writeTest",
         "when": "editorHasSelection"
       }
     ],

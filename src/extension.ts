@@ -2,20 +2,18 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import { ChatGPTViewProvider } from "./provider";
-import { sendMessage } from "./chatgpt";
+import { chatCompletion } from "./chatgpt";
 
 const ask = (prompt: string) => {
   // The code you place here will be executed every time your command is executed
   // Display a message box to the user
-  console.log("prompt", prompt);
 
   const config = vscode.workspace.getConfiguration("ai-code-assist");
   const apiKey = config.get("apiKey") as string;
 
-  return sendMessage(apiKey, prompt).then((data) => {
-    console.log(data);
-    return data;
-  });
+  return chatCompletion(apiKey, prompt).then((response) =>
+    response.choices.map((choice) => choice.message.content).join("\n")
+  );
 };
 
 // This method is called when your extension is activated
@@ -40,6 +38,26 @@ export function activate(context: vscode.ExtensionContext) {
     )
   );
 
+  const commandHandler = (command: string) => {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      return;
+    }
+
+    // Get the selected text of the active editor
+    const selection = editor.selection;
+    const selectedText = editor.document.getText(selection);
+
+    if (selection && selectedText) {
+      // If there is a selection, add the prompt and the selected text to the search prompt
+      const searchPrompt = `${command}\n\`\`\`\n${selectedText}\n\`\`\``;
+
+      ask(searchPrompt).then((response) => {
+        provider.setResponse(response);
+      });
+    }
+  };
+
   const commandAsk = vscode.commands.registerCommand(
     "ai-code-assist.ask",
     () => {
@@ -53,28 +71,46 @@ export function activate(context: vscode.ExtensionContext) {
   const commandExplain = vscode.commands.registerCommand(
     "ai-code-assist.explain",
     () => {
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) {
-        return;
-      }
-
-      // Get the selected text of the active editor
-      const selection = editor.selection;
-      const selectedText = editor.document.getText(selection);
-      const prompt = "Explain what this code does: ";
-
-      if (selection && selectedText) {
-        // If there is a selection, add the prompt and the selected text to the search prompt
-        const searchPrompt = `${prompt}\n\`\`\`\n${selectedText}\n\`\`\``;
-
-        ask(searchPrompt).then((response) => {
-          provider.setResponse(response);
-        });
-      }
+      commandHandler("Explain what this code does:");
     }
   );
 
-  context.subscriptions.push(commandAsk, commandExplain);
+  const commandRefactor = vscode.commands.registerCommand(
+    "ai-code-assist.refactor",
+    () => {
+      commandHandler("Refactor this code:");
+    }
+  );
+
+  const commandOptimize = vscode.commands.registerCommand(
+    "ai-code-assist.optimize",
+    () => {
+      commandHandler("Optimize this code:");
+    }
+  );
+
+  const commandProblems = vscode.commands.registerCommand(
+    "ai-code-assist.findProblems",
+    () => {
+      commandHandler("Find problems in this code:");
+    }
+  );
+
+  const commandTest = vscode.commands.registerCommand(
+    "ai-code-assist.writeTest",
+    () => {
+      commandHandler("Generate mocha tests for this code:");
+    }
+  );
+
+  context.subscriptions.push(
+    commandAsk,
+    commandExplain,
+    commandRefactor,
+    commandOptimize,
+    commandProblems,
+    commandTest
+  );
 }
 
 // This method is called when your extension is deactivated
