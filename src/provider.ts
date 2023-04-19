@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 
+//TODO: Improve the format of the response especially for code and long text
+
 export class ChatGPTViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "ai-code-assist.chatView";
   private _view?: vscode.WebviewView;

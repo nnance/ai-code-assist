@@ -4,6 +4,8 @@ import * as vscode from "vscode";
 import { ChatGPTViewProvider } from "./provider";
 import { chatCompletion } from "./chatgpt";
 
+// Add support for conversation management.  Keep the conversation state in memory with the ability to reset it.
+
 const ask = (prompt: string) => {
   // The code you place here will be executed every time your command is executed
   // Display a message box to the user

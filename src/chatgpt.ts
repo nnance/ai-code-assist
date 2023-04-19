@@ -4,9 +4,9 @@ const model = "gpt-3.5-turbo-0301";
 const temperature = 0.7;
 
 export enum MessageRoleEnum {
-  System = "system",
-  User = "user",
-  Assistant = "assistant",
+  system = "system",
+  user = "user",
+  assistant = "assistant",
 }
 
 export type Message = {
@@ -79,10 +79,13 @@ export function makeRequest(
   });
 }
 
+// TODO: Add support for streaming responses
+// TODO: Add support for other endpoints
+
 export function chatCompletion(apiKey: string, prompt: string) {
   const request: MessageRequest = {
     model,
-    messages: [{ role: MessageRoleEnum.User, content: prompt }],
+    messages: [{ role: MessageRoleEnum.user, content: prompt }],
     temperature,
   };
 
