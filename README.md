@@ -14,6 +14,14 @@ This Visual Studio Code extension allows you to use the [ChatGPT API](https://pl
 
 This extension isn't published to the VSCode marketplace so you will need to build it and install it locally:
 
+### Installing VS Code Extension CLI tool
+
+Make sure you have Node.js installed. Then run:
+
+```
+npm install -g @vscode/vsce
+```
+
 1. Clone this repository
 2. Run `npm install` to install the dependencies
 3. Run `npm run compile` to compile the extension
