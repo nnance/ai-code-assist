@@ -2,20 +2,23 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import { ChatGPTViewProvider } from "./provider";
-import { chatCompletion } from "./chatgpt";
+import { createChatSession } from "./chatgpt";
 
-// Add support for conversation management.  Keep the conversation state in memory with the ability to reset it.
+const config = vscode.workspace.getConfiguration("ai-code-assist");
+const apiKey = config.get("apiKey") as string;
+const session = createChatSession(apiKey);
 
-const ask = (prompt: string) => {
+const ask = (prompt: string, continueChat = false) => {
   // The code you place here will be executed every time your command is executed
   // Display a message box to the user
 
-  const config = vscode.workspace.getConfiguration("ai-code-assist");
-  const apiKey = config.get("apiKey") as string;
+  if (!continueChat) {
+    session.clearHistory();
+  }
 
-  return chatCompletion(apiKey, prompt).then((response) =>
-    response.choices.map((choice) => choice.message.content).join("\n")
-  );
+  return session.ask(prompt).then((response) => {
+    return response.choices.map((choice) => choice.message.content).join("\n");
+  });
 };
 
 // This method is called when your extension is activated
@@ -54,6 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
       // If there is a selection, add the prompt and the selected text to the search prompt
       const searchPrompt = `${command}\n\`\`\`\n${selectedText}\n\`\`\``;
 
+      provider.setPrompt(command);
       ask(searchPrompt).then((response) => {
         provider.setResponse(response);
       });
@@ -105,13 +109,21 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  const commandResetConversation = vscode.commands.registerCommand(
+    "ai-code-assist.resetConversation",
+    () => {
+      session.clearHistory();
+    }
+  );
+
   context.subscriptions.push(
     commandAsk,
     commandExplain,
     commandRefactor,
     commandOptimize,
     commandProblems,
-    commandTest
+    commandTest,
+    commandResetConversation
   );
 }
 

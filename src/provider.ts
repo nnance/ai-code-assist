@@ -9,7 +9,10 @@ export class ChatGPTViewProvider implements vscode.WebviewViewProvider {
   // In the constructor, we store the URI of the extension
   constructor(
     private readonly _extensionUri: vscode.Uri,
-    private readonly askHandler: (prompt: string) => Promise<string>
+    private readonly askHandler: (
+      prompt: string,
+      continueChat?: boolean
+    ) => Promise<string>
   ) {}
 
   public resolveWebviewView(webviewView: vscode.WebviewView) {
@@ -29,12 +32,20 @@ export class ChatGPTViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage((data) => {
       switch (data.type) {
         case "prompt": {
-          this.askHandler(data.value).then((response) => {
+          this.askHandler(data.value, true).then((response) => {
             this.setResponse(response);
           });
         }
       }
     });
+  }
+
+  public setPrompt(prompt: string) {
+    // Show the view and send a message to the webview with the prompt
+    if (this._view) {
+      this._view.show?.(true);
+      this._view.webview.postMessage({ type: "setPrompt", value: prompt });
+    }
   }
 
   public setResponse(response: string) {

@@ -82,11 +82,12 @@ export function makeRequest(
 // TODO: Add support for streaming responses
 // TODO: Add support for other endpoints
 
-export function chatCompletion(apiKey: string, prompt: string) {
+function chatCompletion(apiKey: string, messages: Message[] = []) {
   const request: MessageRequest = {
     model,
-    messages: [{ role: MessageRoleEnum.user, content: prompt }],
+    messages,
     temperature,
+    top_p: 1,
   };
 
   const options = getOptions(apiKey);
@@ -96,4 +97,28 @@ export function chatCompletion(apiKey: string, prompt: string) {
     options,
     request
   ).then((data) => JSON.parse(data) as MessageResponse);
+}
+
+export function createChatSession(apiKey: string) {
+  const history: Message[] = [];
+
+  function ask(prompt: string) {
+    const message = { role: MessageRoleEnum.user, content: prompt };
+
+    return chatCompletion(apiKey, [...history, message]).then((response) => {
+      const messages = response.choices.map((choice) => choice.message);
+      history.push(message, ...messages);
+      return response;
+    });
+  }
+
+  function clearHistory() {
+    history.length = 0;
+  }
+
+  return {
+    ask,
+    getHistory: () => history,
+    clearHistory,
+  };
 }

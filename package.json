@@ -36,6 +36,10 @@
       {
         "command": "ai-code-assist.writeTest",
         "title": "AICodeAssist: Test selection"
+      },
+      {
+        "command": "ai-code-assist.resetConversation",
+        "title": "Reset ChatGPT conversation"
       }
 
     ],
@@ -96,6 +100,9 @@
       {
         "command": "ai-code-assist.writeTest",
         "when": "editorHasSelection"
+      },
+      {
+        "command": "ai-code-assist.resetConversation"
       }
     ],
     "viewsContainers": {

@@ -11,6 +11,11 @@
         setResponse(message.value);
         break;
       }
+      case "setPrompt": {
+        (document.getElementById("prompt-input") as HTMLInputElement).value =
+          message.value;
+        break;
+      }
     }
   });
 
@@ -37,14 +42,13 @@
       literalMidWordUnderscores: true,
       simpleLineBreaks: true,
     });
-    response = fixCodeBlocks(response);
-    const html = converter.makeHtml(response);
-    const respElem = document.getElementById("response");
 
+    const respElem = document.getElementById("response");
     if (!respElem) {
       return;
     }
 
+    const html = converter.makeHtml(fixCodeBlocks(response));
     respElem.innerHTML = html;
 
     var preCodeBlocks = document.querySelectorAll("pre code");
