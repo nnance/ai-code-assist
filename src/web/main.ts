@@ -51,7 +51,7 @@
     const html = converter.makeHtml(fixCodeBlocks(response));
     respElem.innerHTML = html;
 
-    var preCodeBlocks = document.querySelectorAll("pre code");
+    const preCodeBlocks = document.querySelectorAll("pre code");
     for (var i = 0; i < preCodeBlocks.length; i++) {
       preCodeBlocks[i].classList.add(
         "p-2",
@@ -61,7 +61,9 @@
       );
     }
 
-    var codeBlocks = document.querySelectorAll("code");
+    const codeBlocks = document.querySelectorAll("code");
+    console.log(codeBlocks);
+
     for (var i = 0; i < codeBlocks.length; i++) {
       // Check if innertext starts with "Copy code"
       if (codeBlocks[i].innerText.startsWith("Copy code")) {
@@ -80,10 +82,13 @@
       );
 
       codeBlocks[i].addEventListener("click", (e) => {
+        console.log("code block clicked");
         e.preventDefault();
+
+        const el = e.target as HTMLDivElement;
         vscode.postMessage({
           type: "codeSelected",
-          value: codeBlocks[i].innerText,
+          value: el.innerText,
         });
       });
 

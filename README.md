@@ -11,8 +11,8 @@ This Visual Studio Code extension allows you to use the [ChatGPT API](https://pl
 - **Ask general questions** or use code snippets from the editor to query ChatGPT via an input box in the sidebar
 - Right click on a code selection and run one of the context menu **shortcuts**
 - View ChatGPT's responses in a panel next to the editor
-- (TODO) Ask **follow-up questions** to the response (conversation context is maintained)
-- (TODO) **Insert code snippets** from the AI's response into the active editor by clicking on them
+- Ask **follow-up questions** to the response (conversation context is maintained)
+- **Insert code snippets** from the AI's response into the active editor by clicking on them
 
 ## Installation
 
@@ -56,7 +56,7 @@ You can also select a code snippet in the editor and then enter a prompt in the 
 
 <img src="examples/explain.png" alt="Refactoring selected code using chatGPT"/>
 
-(TODO) To insert a code snippet from the AI's response into the editor, simply click on the code block in the panel. The code will be automatically inserted at the cursor position in the active editor.
+To insert a code snippet from the AI's response into the editor, simply click on the code block in the panel. The code will be automatically inserted at the cursor position in the active editor.
 
 You can select some code in the editor, right click on it and choose one of the following from the context menu:
 
@@ -71,7 +71,7 @@ You can select some code in the editor, right click on it and choose one of the 
 
 `Ask ChatGPT` is also available when nothing is selected. For the other four commands, you can customize the exact prompt that will be sent to the AI by editing the extension settings in VSCode Preferences.
 
-(TODO) Because ChatGPT is a conversational AI, you can ask follow-up questions to the response. The conversation context is maintained between queries, so you can ask multiple questions in a row.
+Because ChatGPT is a conversational AI, you can ask follow-up questions to the response. The conversation context is maintained between queries, so you can ask multiple questions in a row.
 To **reset the conversation context**, click `ctrl+shift+p` and select `AI-Code-Assist: Reset Conversation`.
 
 ---

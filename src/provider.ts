@@ -31,6 +31,16 @@ export class ChatGPTViewProvider implements vscode.WebviewViewProvider {
     // add an event listener for messages received by the webview
     webviewView.webview.onDidReceiveMessage((data) => {
       switch (data.type) {
+        case "codeSelected": {
+          let code = data.value;
+          code = code.replace(/([^\\])(\$)([^{0-9])/g, "$1\\$$$3");
+
+          // insert the code as a snippet into the active text editor
+          vscode.window.activeTextEditor?.insertSnippet(
+            new vscode.SnippetString(code)
+          );
+          break;
+        }
         case "prompt": {
           this.askHandler(data.value, true).then((response) => {
             this.setResponse(response);
