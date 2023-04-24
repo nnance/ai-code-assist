@@ -3,6 +3,10 @@
   "displayName": "ai-code-assist",
   "description": "ChatGPT Code Assistant",
   "version": "0.0.1",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nnance/ai-code-assist"},
   "engines": {
     "vscode": "^1.77.0"
   },
