@@ -2,11 +2,11 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import { ChatGPTViewProvider } from "./provider";
-import { createChatSession } from "./chatgpt";
+import { createChatSession } from "./ollama";
 
 const config = vscode.workspace.getConfiguration("ai-code-assist");
 const apiKey = config.get("apiKey") as string;
-const session = createChatSession(apiKey);
+const session = createChatSession();
 
 const ask = (prompt: string, continueChat = false) => {
   // The code you place here will be executed every time your command is executed
@@ -16,9 +16,7 @@ const ask = (prompt: string, continueChat = false) => {
     session.clearHistory();
   }
 
-  return session.ask(prompt).then((response) => {
-    return response.choices.map((choice) => choice.message.content).join("\n");
-  });
+  return session.ask(prompt).then((completion) => completion.response);
 };
 
 // This method is called when your extension is activated

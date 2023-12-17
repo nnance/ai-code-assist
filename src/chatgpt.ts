@@ -1,4 +1,5 @@
-import * as https from "https";
+import { CompletionResponse } from "./types";
+import { getOptions, makeRequest } from "./util";
 
 const model = "gpt-3.5-turbo-0301";
 const temperature = 0.7;
@@ -14,7 +15,7 @@ export type Message = {
   content: string;
 };
 
-export type MessageRequest = {
+type MessageRequest = {
   model: string;
   messages: Message[];
   max_tokens?: number;
@@ -39,48 +40,19 @@ export type MessageResponse = {
   }[];
 };
 
-function getOptions(apiKey: string) {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+// TODO: Add support for streaming responses
+// TODO: Add support for other endpoints
+
+function getOpenAIOptions(apiKey: string) {
+  const options = getOptions();
+  options.headers = {
+    ...options.headers,
+    ...{
       Authorization: `Bearer ${apiKey}`,
     },
   };
+  return options;
 }
-
-export function makeRequest(
-  url: string,
-  options: ReturnType<typeof getOptions>,
-  request: MessageRequest
-) {
-  return new Promise<string>((resolve) => {
-    const req = https.request(url, options, (res) => {
-      let data = "";
-
-      res.on("data", (chunk) => {
-        data += chunk;
-      });
-
-      res.on("end", () => {
-        resolve(data);
-      });
-    });
-
-    req.on("error", (err) => {
-      console.error(err);
-      throw err;
-    });
-
-    const postData = JSON.stringify(request);
-
-    req.write(postData);
-    req.end();
-  });
-}
-
-// TODO: Add support for streaming responses
-// TODO: Add support for other endpoints
 
 function chatCompletion(apiKey: string, messages: Message[] = []) {
   const request: MessageRequest = {
@@ -90,26 +62,33 @@ function chatCompletion(apiKey: string, messages: Message[] = []) {
     top_p: 1,
   };
 
-  const options = getOptions(apiKey);
+  const options = getOpenAIOptions(apiKey);
 
-  return makeRequest(
+  return makeRequest<MessageRequest>(
     "https://api.openai.com/v1/chat/completions",
     options,
     request
   ).then((data) => JSON.parse(data) as MessageResponse);
 }
 
-export function createChatSession(apiKey: string) {
+export const createChatSession = (apiKey: string) => () => {
   const history: Message[] = [];
 
-  function ask(prompt: string) {
+  function ask(prompt: string): Promise<CompletionResponse> {
     const message = { role: MessageRoleEnum.user, content: prompt };
 
-    return chatCompletion(apiKey, [...history, message]).then((response) => {
-      const messages = response.choices.map((choice) => choice.message);
-      history.push(message, ...messages);
-      return response;
-    });
+    return chatCompletion(apiKey, [...history, message])
+      .then((response) => {
+        const messages = response.choices.map((choice) => choice.message);
+        history.push(message, ...messages);
+        return response;
+      })
+      .then((response) => ({
+        model: response.model,
+        response: response.choices
+          .map((choice) => choice.message.content)
+          .join("\n"),
+      }));
   }
 
   function clearHistory() {
@@ -121,4 +100,4 @@ export function createChatSession(apiKey: string) {
     getHistory: () => history,
     clearHistory,
   };
-}
+};
