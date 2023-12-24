@@ -13,17 +13,8 @@ interface MessageResponse {
   done: boolean;
 }
 
-function getOptions() {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  };
-}
-
 export function createChatSession(
-  model = "mistral",
+  model = "codellama",
   temperature = 0.5,
   stream = false
 ) {
@@ -32,11 +23,8 @@ export function createChatSession(
   function ask(prompt: string) {
     const message = { model, prompt, stream };
 
-    const options = getOptions();
-
     return makeRequest<MessageRequest>(
       "http://localhost:11434/api/generate",
-      options,
       message
     ).then((data) => JSON.parse(data) as MessageResponse);
   }

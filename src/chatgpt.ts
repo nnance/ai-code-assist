@@ -1,5 +1,5 @@
 import { CompletionResponse } from "./types";
-import { getOptions, makeRequest } from "./util";
+import { makeRequest } from "./util";
 
 const model = "gpt-3.5-turbo-0301";
 const temperature = 0.7;
@@ -43,17 +43,6 @@ export type MessageResponse = {
 // TODO: Add support for streaming responses
 // TODO: Add support for other endpoints
 
-function getOpenAIOptions(apiKey: string) {
-  const options = getOptions();
-  options.headers = {
-    ...options.headers,
-    ...{
-      Authorization: `Bearer ${apiKey}`,
-    },
-  };
-  return options;
-}
-
 function chatCompletion(apiKey: string, messages: Message[] = []) {
   const request: MessageRequest = {
     model,
@@ -62,16 +51,14 @@ function chatCompletion(apiKey: string, messages: Message[] = []) {
     top_p: 1,
   };
 
-  const options = getOpenAIOptions(apiKey);
-
   return makeRequest<MessageRequest>(
     "https://api.openai.com/v1/chat/completions",
-    options,
-    request
+    request,
+    apiKey
   ).then((data) => JSON.parse(data) as MessageResponse);
 }
 
-export const createChatSession = (apiKey: string) => () => {
+export const createChatSession = (apiKey: string) => {
   const history: Message[] = [];
 
   function ask(prompt: string): Promise<CompletionResponse> {

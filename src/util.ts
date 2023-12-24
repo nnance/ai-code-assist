@@ -3,22 +3,37 @@ import * as https from "https";
 
 interface RequestOptions extends http.RequestOptions, https.RequestOptions {}
 
-export function getOptions(): RequestOptions {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+function getOptions<T>(
+  url: string,
+  body?: T,
+  apiKey?: string
+): Promise<RequestOptions> {
+  const { protocol } = new URL(url);
+  const headers: Record<string, string> = {
+    ...{
+      "Content-Type": body ? "application/json" : "application/plaintext",
     },
+    ...(apiKey
+      ? {
+          Authorization: `Bearer ${apiKey}`,
+        }
+      : {}), // set options based apiKey
+    ...(protocol === "https:"
+      ? { rejectUnauthorized: "false", secure: "true", port: "443" }
+      : {}), // set options based on the protocol (HTTP or HTTPS)
   };
+  return Promise.resolve({
+    method: body ? "POST" : "GET",
+    headers,
+  });
 }
 
-export function makeRequest<T>(
-  url: string,
-  options: RequestOptions,
-  request: T
-) {
+function sendRequest<T>(url: string, options: RequestOptions, body?: T) {
   return new Promise<string>((resolve) => {
-    const req = https.request(url, options, (res) => {
+    const { protocol } = new URL(url);
+    const request = protocol === "https:" ? https.request : http.request;
+
+    const req = request(url, options, (res) => {
       let data = "";
 
       res.on("data", (chunk) => {
@@ -35,51 +50,15 @@ export function makeRequest<T>(
       throw err;
     });
 
-    const postData = JSON.stringify(request);
+    const postData = JSON.stringify(body);
 
     req.write(postData);
     req.end();
   });
 }
 
-function sendRequest(
-  url: string,
-  data?: Buffer | URLSearchParams
-): Promise<{
-  statusCode: number;
-  response: http.IncomingMessage | https.IncomingMessage;
-}> {
-  return new Promise((resolve, reject) => {
-    const parsedUrl = new URL(url);
-    const requestOptions: RequestOptions = {
-      method: "GET", // or other HTTP methods you need
-      ...(parsedUrl.protocol === "https:"
-        ? { rejectUnauthorized: false, secure: true, port: 443 }
-        : {}), // set options based on the protocol (HTTP or HTTPS)
-      path: parsedUrl.pathname,
-      headers: {
-        "Content-Type": data ? "application/json" : "application/plaintext",
-      },
-      encoding: null, // disable auto-decoding of response body
-    };
-
-    const request =
-      parsedUrl.protocol === "https:" ? https.request : http.request;
-    const req = request(requestOptions, (res) => {
-      if (res.statusCode >= 400) {
-        return reject({ statusCode: res.statusCode, response: res });
-      }
-
-      resolve({ statusCode: res.statusCode, response: res });
-    });
-
-    if (data) {
-      req.write(data);
-      req.end();
-    }
-
-    req.on("error", (e) => {
-      reject(e);
-    });
+export function makeRequest<T>(url: string, body: T, apiKey?: string) {
+  return getOptions(url, body, apiKey).then((options) => {
+    return sendRequest(url, options, body);
   });
 }
