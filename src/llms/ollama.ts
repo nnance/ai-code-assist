@@ -19,6 +19,10 @@ interface MessageResponse {
   done: boolean;
 }
 
+// TODO: Add support for streaming responses
+// TODO: Add complete chat conversation by including history in the request for context
+// TODO: Add support for other endpoints
+
 export const createChatSession: CreateChatSession = ({
   model = "codellama",
   temperature = 0.5,

@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import { ChatGPTViewProvider } from "./provider";
-import { createChatSession } from "./ollama";
+import { createChatSession } from "./llms/ollama";
 
 const config = vscode.workspace.getConfiguration("ai-code-assist");
 const apiKey = config.get("apiKey") as string;
@@ -20,6 +20,8 @@ const ask = (prompt: string, continueChat = false) => {
 
   return session.ask(prompt).then((completion) => completion.response);
 };
+
+// TODO: Add support for chat history for a complete conversation
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
