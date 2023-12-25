@@ -1,11 +1,10 @@
 import {
   ChatResponse,
   ChatRoleEnum,
-  ChatSession,
   CompletionResponse,
   CreateChatSession,
+  makeRequest,
 } from "./llm";
-import { makeRequest } from "./util";
 
 const model = "gpt-3.5-turbo-0301";
 const temperature = 0.7;

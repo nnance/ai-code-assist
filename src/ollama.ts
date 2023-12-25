@@ -3,8 +3,8 @@ import {
   ChatRoleEnum,
   CompletionResponse,
   CreateChatSession,
+  makeRequest,
 } from "./llm";
-import { makeRequest } from "./util";
 
 interface MessageRequest {
   model: string;
