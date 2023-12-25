@@ -1,16 +1,22 @@
-import { CompletionResponse } from "./types";
+import {
+  ChatResponse,
+  ChatRoleEnum,
+  ChatSession,
+  CompletionResponse,
+  CreateChatSession,
+} from "./llm";
 import { makeRequest } from "./util";
 
 const model = "gpt-3.5-turbo-0301";
 const temperature = 0.7;
 
-export enum MessageRoleEnum {
+enum MessageRoleEnum {
   system = "system",
   user = "user",
   assistant = "assistant",
 }
 
-export type Message = {
+type Message = {
   role: MessageRoleEnum;
   content: string;
 };
@@ -27,7 +33,7 @@ type MessageRequest = {
   stop?: string;
 };
 
-export type MessageResponse = {
+type MessageResponse = {
   id: string;
   object: string;
   created: number;
@@ -58,13 +64,17 @@ function chatCompletion(apiKey: string, messages: Message[] = []) {
   ).then((data) => JSON.parse(data) as MessageResponse);
 }
 
-export const createChatSession = (apiKey: string) => {
+export const createChatSession: CreateChatSession = ({ apiKey }) => {
+  if (!apiKey) {
+    throw new Error("API key is required");
+  }
+
   const history: Message[] = [];
 
   function ask(prompt: string): Promise<CompletionResponse> {
     const message = { role: MessageRoleEnum.user, content: prompt };
 
-    return chatCompletion(apiKey, [...history, message])
+    return chatCompletion(apiKey!, [...history, message])
       .then((response) => {
         const messages = response.choices.map((choice) => choice.message);
         history.push(message, ...messages);
@@ -78,13 +88,19 @@ export const createChatSession = (apiKey: string) => {
       }));
   }
 
-  function clearHistory() {
-    history.length = 0;
+  function historyToChatResponse(history: Message[]): ChatResponse[] {
+    return history.map((message) => ({
+      role:
+        message.role === MessageRoleEnum.user
+          ? ChatRoleEnum.user
+          : ChatRoleEnum.assistant,
+      content: message.content,
+    }));
   }
 
   return {
     ask,
-    getHistory: () => history,
-    clearHistory,
+    getHistory: () => historyToChatResponse(history),
+    clearHistory: () => (history.length = 0),
   };
 };

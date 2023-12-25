@@ -1,3 +1,9 @@
+import {
+  ChatResponse,
+  ChatRoleEnum,
+  CompletionResponse,
+  CreateChatSession,
+} from "./llm";
 import { makeRequest } from "./util";
 
 interface MessageRequest {
@@ -13,14 +19,14 @@ interface MessageResponse {
   done: boolean;
 }
 
-export function createChatSession(
+export const createChatSession: CreateChatSession = ({
   model = "codellama",
   temperature = 0.5,
-  stream = false
-) {
+  stream = false,
+}) => {
   const history: string[] = [];
 
-  function ask(prompt: string) {
+  function ask(prompt: string): Promise<CompletionResponse> {
     const message = { model, prompt, stream };
 
     return makeRequest<MessageRequest>(
@@ -29,13 +35,16 @@ export function createChatSession(
     ).then((data) => JSON.parse(data) as MessageResponse);
   }
 
-  function clearHistory() {
-    history.length = 0;
+  function historyToChatResponse(history: string[]): ChatResponse[] {
+    return history.map((message) => ({
+      role: ChatRoleEnum.assistant,
+      content: message,
+    }));
   }
 
   return {
     ask,
-    getHistory: () => history,
-    clearHistory,
+    getHistory: () => historyToChatResponse(history),
+    clearHistory: () => (history.length = 0),
   };
-}
+};

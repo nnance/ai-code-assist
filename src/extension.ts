@@ -2,11 +2,13 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import { ChatGPTViewProvider } from "./provider";
-import { createChatSession } from "./chatgpt";
+import { createChatSession } from "./ollama";
 
 const config = vscode.workspace.getConfiguration("ai-code-assist");
 const apiKey = config.get("apiKey") as string;
-const session = createChatSession(apiKey);
+const session = createChatSession({
+  model: "codellama",
+});
 
 const ask = (prompt: string, continueChat = false) => {
   // The code you place here will be executed every time your command is executed
